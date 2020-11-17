@@ -136,7 +136,7 @@ function priceJPY($price,$rate) {
 }
 
 function priceTAX($price,$tax_rate) {
-	if(!$tax_rate){ $tax_rate = 10; // ％ }
+	if(!$tax_rate){ $tax_rate = 10; } // ％
 	$tax = $price * $tax_rate / 100;
 	$total = $price + $tax;
 	$priceArray = array($total,$tax,$price);
