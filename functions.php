@@ -9,9 +9,10 @@ function fileCheck($checkPath) {
 	}
 }
 /* ファイルのオープン */
-function fileOpen($fileName) {
+function fileOpen($fileName,$mode) {
+	if(!isset($mode)){ $mode = "r"; }
 	$listTxtFile = $fileName;
-	$open_file = @fopen($listTxtFile,"r") or die("FILE NOTFOUND");
+	$open_file = @fopen($listTxtFile,$mode) or die("FILE NOTFOUND");
 	flock($open_file,LOCK_EX);
 	rewind($open_file);
 	flock($open_file,LOCK_UN);
