@@ -1,5 +1,4 @@
 <?php
-
 /* ファイルの存在確認 */
 function fileCheck($checkPath) {
 	if(file_exists($checkPath)){
@@ -9,20 +8,29 @@ function fileCheck($checkPath) {
 	}
 }
 /* ファイルのオープン */
-function fileOpen($fileName,$mode) {
-	if(!isset($mode)){ $mode = "r"; }
+function fileOpen($fileName, $mode) {
 	$listTxtFile = $fileName;
-	$open_file = @fopen($listTxtFile,$mode) or die("FILE NOTFOUND");
+ if(!isset($mode)) { $mode = "r"; }
+	$open_file = fopen($listTxtFile,$mode) or die("FILE NOTFOUND");
 	flock($open_file,LOCK_EX);
 	rewind($open_file);
 	flock($open_file,LOCK_UN);
 	return $open_file;
 }
 /* 日付の（曜日入り）の整形（英表記） */
-function formatDate($ee) {
-	$week = array('Sun','Mon','Tue','Wed','Thu','Fri','Sat');
-	$wday = strftime('%w', strtotime($ee));
-	$dateStr = date("M j, Y", strtotime($ee))." [".$week[$wday]."]";
+function formatDate($getDate,$lang="en") {
+	if(gettype($getDate)=="string"){
+		$getDate = rtrim(str_replace(array('年', '月',), '-' , str_replace(array('時', '分'), ':', str_replace(array('日', '秒'), "", $getDate))));
+		$getDateStamp = strtotime($getDate);
+	} else { $getDateStamp = $getDate; }
+	$wday = strftime('%w', $getDateStamp);
+	if(($lang=="ja")||($lang=="jp")){
+		$week = array('日','月','火','水','木','金','土');
+		$dateStr = date("Y年n月j日", $getDateStamp)."（".$week[$wday]."）";
+	} else {
+		$week = array('Sun','Mon','Tue','Wed','Thu','Fri','Sat');
+		$dateStr = date("M j, Y", $getDateStamp)." [".$week[$wday]."]";
+	}
 	return $dateStr;
 }
 /* 日付の（曜日入り）の整形（日本語表記） */
@@ -44,24 +52,19 @@ function funcZero($num,$keta) {
 	return $num;
 }
 /* 有効期限（年月）の確認 */
-function dateCheck($yy,$mm,$limit) {
-	$nowY = date('Y');
-	$nowM = date('n');
-	$yLimit = $yy;
-	$mLimit = $mm + $limit;
-	if($mLimit > 12){
-		$yLimit++;
-		$mLimit -= 12;
-	}
-	if(($nowY==$yy)&&($nowY == $yLimit)&&($mLimit>=$nowM)){
-		return true;
-	} else if (($nowY<$yLimit)){
-		return true;
-	} else if(($nowY == $yLimit)&&($mLimit>=$nowM)){
-		return true;
+function dateCheck($entry,$limit) {
+	$now = time();
+	$entryDateStamp = strtotime($entry);
+	$limitSet = $entry." ".$limit;
+	$limitPlus1Set = $limitSet." 1days";
+	$limitDateStamp = strtotime($limitSet);
+	$limitPlus1Stamp = strtotime($limitPlus1Set);
+	if($now<= $limitPlus1Stamp){
+		$msg = "有効期間中";
 	} else {
-		return false;
+		$msg = "有効期限切れ";
 	}
+	return[$entryDateStamp, $limitDateStamp, $limitPlus1Stamp, $msg];
 }
 /* ファイルサイズの取得 */
 function sizeCheck($getFile){
@@ -104,7 +107,7 @@ function FileSizeConvert($filePath){
 function up_file_check($checkfile) {
 		global $file_size, $file_width, $file_height, $ex10sion;
 		$file_size = filesize($checkfile); // ファイル容量の取得
-		$file_type = getimagesize($checkfile); // 画像の３属性情報の取得
+		$file_type = getimagesize($checkfile); // 画像の属性情報の取得
 		$file_width = $file_type[0]; // 画像幅の取得
 		$file_height = $file_type[1]; // 画像高の取得
 		if($file_type[2] == 1) { $ex10sion ='gif'; } // 画像の種類（拡張子）を取得
@@ -121,27 +124,23 @@ function up_file_del($delfile) {
 	}
 }
 /* 概算での金額換算（JPY -> USD） */
-function priceUSD($price,$rate) {
-	if(!$rate){ $rate = 105; }
+function priceUSD($price,$rate=105) {
 	$usd = $price / $rate;
 	$result = round($usd, 2);
 	return $result;
 }
 /* 金額換算（USD -> JPY） */
-function priceJPY($price,$rate) {
-	if(!$rate){ $rate = 105; }
+function priceJPY($price,$rate=105) {
 	if(!$keta){ $keta = -2; }
 	$jpy = $price * $rate;
 	$result = round($jpy);
 	return $result;
 }
-
-function priceTAX($price,$tax_rate) {
-	if(!$tax_rate){ $tax_rate = 10; } // ％
+/* 税込換算（JPY） */
+function priceTAX($price,$tax_rate=10) {
 	$tax = $price * $tax_rate / 100;
 	$total = $price + $tax;
 	$priceArray = array($total,$tax,$price);
 	return $priceArray;
 }
-
 ?>
