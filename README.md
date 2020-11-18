@@ -56,4 +56,7 @@
 ファイルの内容は「fgetcsv(ポインター)」関数で取り出す。  
 追記は「fputcsv(ポインター, Array)」関数で操作。
 
+★サンプル
+[link](https://demo.s1jp.com/php-func/){:target="_blank"}
+
 &copy; 2020
